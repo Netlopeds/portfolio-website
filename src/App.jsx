@@ -1,13 +1,36 @@
 import { useState, useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import { Container, Nav, Navbar, Image} from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import CustomNavbar from './components/CustomNavbar';
+import { 
+  playHoverSound, 
+  playClickSound, 
+  playHuhSound, 
+  playResetSound, 
+  playUnaSound, 
+  playNameHover 
+} from './utils/audioUtils';
 
 function App() {
   const [activeSection, setActiveSection] = useState('landing-section');
   const [scrollActiveSection, setScrollActiveSection] = useState('landing-section');
+  const [patCount, setPatCount] = useState(0);
+  const [logoScale, setLogoScale] = useState(1);
+
+  // Handle logo patting
+  const handleLogoPat = () => {
+    setPatCount(prev => prev + 1);
+    setLogoScale(prev => prev + 0.1); // Remove max scale limit - let it grow infinitely!
+    playHoverSound(); // Play sound on each pat
+  };
+
+  // Reset pat counter and logo size
+  const resetPats = () => {
+    playResetSound(); // Play reset sound first
+    setPatCount(0);
+    setLogoScale(1);
+  };
 
   useEffect(() => {
     let scrollTimeout;
@@ -52,70 +75,49 @@ function App() {
 
   return (
     <>
-      <Navbar expand="lg" fixed="top" className="custom-navbar">
-        <Container>
-          <Navbar.Brand href="#home" className="custom-brand">
-            <div className="brand-container">
-              <img src={import.meta.env.BASE_URL + "/Image/temp_logo.png"} alt="Marco Arante Logo" className="navbar-logo" />
-              <span className="brand-text">MARCO ARANTE</span>
-            </div>
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="ms-auto custom-nav">
-              <Nav.Link 
-                href="#landing-section" 
-                className={`custom-nav-link ${scrollActiveSection === 'landing-section' ? 'active' : ''}`}
-                onClick={() => {
-                  document.querySelector('.landing-section').scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                HOME
-              </Nav.Link>
-              <Nav.Link 
-                href="#about-section" 
-                className={`custom-nav-link ${scrollActiveSection === 'about-section' ? 'active' : ''}`}
-                onClick={() => {
-                  document.getElementById('about-section').scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                ABOUT
-              </Nav.Link>
-              <Nav.Link 
-                href="#projects-section" 
-                className={`custom-nav-link ${scrollActiveSection === 'projects-section' ? 'active' : ''}`}
-                onClick={() => {
-                  document.getElementById('projects-section').scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                PROJECTS
-              </Nav.Link>
-              <Nav.Link 
-                href="#contact-section" 
-                className={`custom-nav-link ${scrollActiveSection === 'contact-section' ? 'active' : ''}`}
-                onClick={() => {
-                  document.getElementById('contact-section').scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                CONTACT
-              </Nav.Link>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-      
+      <CustomNavbar scrollActiveSection={scrollActiveSection} />
       
       {/* Landing Section */}
       <div className="landing-section">
         <div className="landing-content">
-          <img src={import.meta.env.BASE_URL + "/Image/temp_logo.png"} alt="Marco Arante Logo" className="landing-logo" />
+          <div className="logo-pat-container">
+            <img 
+              src={import.meta.env.BASE_URL + "/Image/temp_logo.png"} 
+              alt="Marco Arante Logo" 
+              className="landing-logo"
+              onMouseEnter={playUnaSound}
+              onClick={handleLogoPat}
+              style={{ 
+                transform: `scale(${logoScale})`,
+                cursor: 'pointer',
+                transition: 'transform 0.3s ease'
+              }}
+            />
+            {patCount > 0 && (
+              <div className="pat-counter">
+                <span className="pat-text">Usagi pats: {patCount}</span>
+                <button 
+                  className="reset-btn"
+                  onClick={resetPats}
+                  title="Reset pats"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
           <h1 className="landing-title">
-            Hello, I'm <span className="name-highlight">Marco</span>.<br />
-            I'm an Information Systems Analyst.
+            Hello, I'm <span className="name-highlight" onMouseEnter={playNameHover}>Marco</span><br />
+            I'm an <span className="name-highlight" onMouseEnter={playNameHover}>IS Analyst & Front-End Web Developer.</span>
           </h1>
           <button 
             className="landing-btn"
-            onClick={() => document.getElementById('about-section').scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => {
+              playClickSound();
+              document.getElementById('about-section').scrollIntoView({ behavior: 'smooth' });
+            }}
           >
             More Info About Me ↓
           </button>
@@ -131,12 +133,12 @@ function App() {
                 Hello! I'm Marco, a <span className="highlight">developer based in Philippines.</span>
               </h1>
               <p className="hero-description">
-                I love building tools that are user-friendly, simple and delightful.
+                I am a passionate analyst and a developer with a focus on creating efficient and effective solutions for businesses. I also love to create websites that are filled with creativity, user-friendly, and, visually appealing.
               </p>
               <p className="hero-description">
-                I was a student at University of Santo Tomas (UST) where I spent 4 years learning the fundamentals 
-                of Information Systems . I also worked at "blah"where my role 
-                was ....
+                I was a student at <span className="highlight-school">University of Santo Tomas (UST)</span> where I spent 4 years learning the fundamentals 
+                of <span className="highlight-course">Information Systems</span> and graduated with <span className="highlight-achieve">Dean's Lister</span> and <span className="highlight-achieve">Cum Laude</span>. 
+                I also worked at <span className="highlight-achieve">[insert company]</span> where I spent 2 years as a [insert role]. My career still has a long way to go, and I'm excited about the opportunities ahead.
               </p>
               <p className="hero-description">
                 Through these experiences, I had the opportunity to work with both small and large, 
@@ -144,17 +146,37 @@ function App() {
                 working style that leans towards flexibility, clarity, and collaboration.
               </p>
               <p className="hero-description">
-                I'm currently looking for a new role as a developer. Hire me?
+                I'm currently looking for a new role as an analyst or a developer. I might be the best fit for it. <span className="highlight-hire">Want to Hire me?</span>
               </p>
               <div className="hero-buttons">
-                <button className="btn-linkedin">View LinkedIn</button>
-                <a href="https://github.com/Netlopeds" target="_blank" rel="noopener noreferrer">
-                  <button className="btn-github">View Github</button>
+                <button className="btn-linkedin">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  </svg>
+                  View LinkedIn
+                </button>
+                <a href="https://github.com/Netlopeds" target="_blank" rel="noopener noreferrer" className="btn-github">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                  </svg>
+                  View Github
                 </a>
+                <button className="btn-cv">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                  </svg>
+                  View my Resume/CV
+                </button>
               </div>
             </div>
             <div className="hero-image">
-              <img src={import.meta.env.BASE_URL + "/Image/picture_homepage.png"} alt="Marco Arante" className="profile-image" />
+              <img 
+                src={import.meta.env.BASE_URL + "/Image/picture_homepage.png"} 
+                alt="Marco Arante" 
+                className="profile-image"
+                onClick={playHuhSound}
+                style={{ cursor: 'pointer' }}
+              />
             </div>
           </div>
         </Container>
