@@ -1,15 +1,26 @@
+import { useState, useEffect } from 'react';
 import { Container, Nav, Navbar } from 'react-bootstrap';
 import { playHoverSound } from '../utils/audioUtils';
 
-const CustomNavbar = ({ scrollActiveSection }) => {
+const CustomNavbar = ({ sections, scrollActiveSection }) => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Compact the navbar once the page is scrolled
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <Navbar expand="lg" fixed="top" className="custom-navbar">
+    <Navbar expand="lg" fixed="top" collapseOnSelect className={`custom-navbar ${isScrolled ? 'scrolled' : ''}`}>
       <Container>
-        <Navbar.Brand href="#home" className="custom-brand">
+        <Navbar.Brand href="#landing-section" className="custom-brand">
           <div className="brand-container">
-            <img 
-              src={import.meta.env.BASE_URL + "/Image/temp_logo.png"} 
-              alt="Marco Arante Logo" 
+            <img
+              src={import.meta.env.BASE_URL + "/Image/temp_logo.png"}
+              alt="Marco Arante Logo"
               className="navbar-logo"
               onMouseEnter={playHoverSound}
             />
@@ -18,43 +29,12 @@ const CustomNavbar = ({ scrollActiveSection }) => {
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto custom-nav">
-            <Nav.Link 
-              href="#landing-section" 
-              className={`custom-nav-link ${scrollActiveSection === 'landing-section' ? 'active' : ''}`}
-              onClick={() => {
-                document.querySelector('.landing-section').scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              HOME
-            </Nav.Link>
-            <Nav.Link 
-              href="#about-section" 
-              className={`custom-nav-link ${scrollActiveSection === 'about-section' ? 'active' : ''}`}
-              onClick={() => {
-                document.getElementById('about-section').scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              ABOUT
-            </Nav.Link>
-            <Nav.Link 
-              href="#projects-section" 
-              className={`custom-nav-link ${scrollActiveSection === 'projects-section' ? 'active' : ''}`}
-              onClick={() => {
-                document.getElementById('projects-section').scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              PROJECTS
-            </Nav.Link>
-            <Nav.Link 
-              href="#contact-section" 
-              className={`custom-nav-link ${scrollActiveSection === 'contact-section' ? 'active' : ''}`}
-              onClick={() => {
-                document.getElementById('contact-section').scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              CONTACT
-            </Nav.Link>
+          <Nav className="ms-auto custom-nav" activeKey={scrollActiveSection}>
+            {sections.map(({ id, label }) => (
+              <Nav.Link key={id} href={`#${id}`} eventKey={id} className="custom-nav-link">
+                {label}
+              </Nav.Link>
+            ))}
           </Nav>
         </Navbar.Collapse>
       </Container>
